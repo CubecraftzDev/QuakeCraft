@@ -1,0 +1,7 @@
+name: QuakeCraft
+main: fr.ironcraft.quakecraft.Main
+version: 1.0
+commands:
+    quakecraft:
+        description: QuakeCraft.
+        usage: /quakecraft 
