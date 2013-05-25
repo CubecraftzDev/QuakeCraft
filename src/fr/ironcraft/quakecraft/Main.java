@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.logging.Logger;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -46,6 +47,7 @@ public class Main extends JavaPlugin implements Listener {
 	}
 
 	HashMap<Player, GameMode> Gamemode = new HashMap<Player, GameMode>();
+	int compteur = 60; 
 
 	public void onEnable() {
 		this.loadConfigFile();
@@ -101,108 +103,157 @@ public class Main extends JavaPlugin implements Listener {
 			Player player = (Player) sender; // Le player est le sender
 
 			String cmd;
-			if (args.length == 1) {
-				cmd = args[0];
-				System.out.println(cmd);
-				if (cmd.equals("join")) {
+			if (commandLabel.equals("quakecraft")) {
 
-					if (!(this.getConfig().getInt("ydefaultspawn") == 0)) {
-						if (Players.size() < 6 && (!Players.contains(player))) {
-							SimpleInventorySaver sis = inventorySaver
-									.get(player);
-							if (sis == null) {
-								sis = new SimpleInventorySaver();
-								inventorySaver.put(player, sis);
-							}
-							sis.save(player);
-							player.getInventory().clear();
-							ItemStack woodhoe = new ItemStack(
-									Material.WOOD_HOE, 1);
+				if (args.length == 1) {
+					cmd = args[0];
 
-							player.getInventory().addItem(woodhoe);
-							player.getInventory().setHeldItemSlot(0);
-							ItemStack is = player.getInventory().getItem(0);
+					if (cmd.equals("join")) {
 
-							ItemMeta im = is.getItemMeta();
-							im.setDisplayName("RailGun");
-							is.setItemMeta(im);
-							Gamemode.put(player, player.getGameMode());
+						if (!(this.getConfig().getInt("ydefaultspawn") == 0)) {
+							if (Players.size() < 8
+									&& (!Players.contains(player)) && !isStart()) {
+								SimpleInventorySaver sis = inventorySaver
+										.get(player);
+								if (sis == null) {
+									sis = new SimpleInventorySaver();
+									inventorySaver.put(player, sis);
+								}
+								sis.save(player);
+								player.getInventory().clear();
+								ItemStack woodhoe = new ItemStack(
+										Material.WOOD_HOE, 1);
 
-							player.setGameMode(GameMode.ADVENTURE);
-							player.addPotionEffect(new PotionEffect(
-									PotionEffectType.JUMP, 12000, 1));
-							player.addPotionEffect(new PotionEffect(
-									PotionEffectType.SPEED, 12000, 3));
-							Players.add(player);
-							player.teleport(beforeSpawn());
-							for (Player p : Players) {
-								p.sendMessage("§7[§cQuake§7] "
-										+ player.getName() + " join the game ("
-										+ Players.size() + "/8)");
+								player.getInventory().addItem(woodhoe);
+								player.getInventory().setHeldItemSlot(0);
+								ItemStack is = player.getInventory().getItem(0);
+
+								ItemMeta im = is.getItemMeta();
+								im.setDisplayName("RailGun");
+								is.setItemMeta(im);
+								Gamemode.put(player, player.getGameMode());
+
+								player.setGameMode(GameMode.ADVENTURE);
+								player.addPotionEffect(new PotionEffect(
+										PotionEffectType.JUMP, 12000, 1));
+								player.addPotionEffect(new PotionEffect(
+										PotionEffectType.SPEED, 12000, 3));
+								Players.add(player);
+								player.teleport(beforeSpawn());
+								for (Player p : Players) {
+									p.sendMessage("§7[§cQuake§7] "
+											+ player.getName()
+											+ " join the game ("
+											+ Players.size() + "/8)");
+								}
+
 							}
 
 						}
+						if (Players.size() == 6) {
 
-					} else {
-						sender.sendMessage("§7[§cQuake§7] Unable to join now !");
-						return true;
-					}
+							getServer().getScheduler()
+									.scheduleSyncRepeatingTask(this,
+											new Runnable() {
 
-					return true;
-				}
-				if (cmd.equals("start")) {
-					if (Players.size() < 6) {
-						isStart = true;
-						for (Player online : Players) {
-							score = objective.getScore(online);
-							score.setScore(0); // Example
+												public void run() {
 
-						}
+													if (compteur != -1) {
 
-						for (Player online : Players) {
-							online.setScoreboard(board);
-						}
-					}
-					return true;
+														if (compteur != 0) {
 
-				}
-				if (cmd.equals("quit")) {
-					if (!isStart()) {
-						if (Players.contains(player)) {
-							Players.remove(player);
-							player.setScoreboard(manager.getNewScoreboard());
-							SimpleInventorySaver sis = inventorySaver
-									.get(player);
-							if (sis == null) {
+															if (compteur == 60
+																	|| compteur == 30
+																	|| compteur <= 10) {
+																Bukkit.broadcastMessage("§7[§cQuake§7]: The Game Start in "
+																		+ compteur
+																		+ " seconds");
+															}
 
-							}
-							player.setGameMode(Gamemode.get(player));
-							Gamemode.remove(player);
-							sis.restore(player);
-							for (PotionEffect effect : player
-									.getActivePotionEffects()) {
-								player.removePotionEffect(effect.getType());
+															compteur--;
+														} else {
 
-							}
+															Bukkit.broadcastMessage("§7[§cQuake§7] Quake Start !");
+															isStart = true;
+															compteur--;
+															for (Player online : Players) {
+																score = objective.getScore(online);
+																score.setScore(0); // Example
+
+															}
+
+															for (Player online : Players) {
+																online.setScoreboard(board);
+															}
+
+														}
+
+													}
+
+												}
+
+											}, 0L, 20L);
+						} else {
+							sender.sendMessage("§7[§cQuake§7] Unable to join now !");
 							return true;
 						}
-					} else {
-						sender.sendMessage("§7[§cQuake§7] You can not leave the game now !");
-					}
 
-				}
-				if (cmd.equals("setdefaultspawn")) {
-					this.getConfig().set("xdefaultspawn",
-							player.getLocation().getX());
-					this.getConfig().set("ydefaultspawn",
-							player.getLocation().getY());
-					this.getConfig().set("zdefaultspawn",
-							player.getLocation().getZ());
-					this.getConfig().set("world",
-							player.getLocation().getWorld().getName());
-					this.saveConfigFile();
-					sender.sendMessage("§7[§cQuake§7] Configuration du spawn d'arriver Ok. Merci de définir d'autre spawn avec /quakecraft setspawnrandom");
-					return true;
+						return true;
+					}
+					if (cmd.equals("forcestart")) {
+						if (Players.size() < 6) {
+							isStart = true;
+							for (Player online : Players) {
+								score = objective.getScore(online);
+								score.setScore(0); // Example
+
+							}
+
+							for (Player online : Players) {
+								online.setScoreboard(board);
+							}
+						}
+						return true;
+
+					}
+					if (cmd.equals("quit")) {
+						if (!isStart()) {
+							if (Players.contains(player)) {
+								Players.remove(player);
+								player.setScoreboard(manager.getNewScoreboard());
+								SimpleInventorySaver sis = inventorySaver
+										.get(player);
+								if (sis == null) {
+
+								}
+								player.setGameMode(Gamemode.get(player));
+								Gamemode.remove(player);
+								sis.restore(player);
+								for (PotionEffect effect : player
+										.getActivePotionEffects()) {
+									player.removePotionEffect(effect.getType());
+
+								}
+								return true;
+							}
+						} else {
+							sender.sendMessage("§7[§cQuake§7] You can not leave the game now !");
+						}
+
+					}
+					if (cmd.equals("setdefaultspawn")) {
+						this.getConfig().set("xdefaultspawn",
+								player.getLocation().getX());
+						this.getConfig().set("ydefaultspawn",
+								player.getLocation().getY());
+						this.getConfig().set("zdefaultspawn",
+								player.getLocation().getZ());
+						this.getConfig().set("world",
+								player.getLocation().getWorld().getName());
+						this.saveConfigFile();
+						sender.sendMessage("§7[§cQuake§7] Configuration du spawn d'arriver Ok. Merci de définir d'autre spawn avec /quakecraft setspawnrandom");
+						return true;
+					}
 				}
 
 			}
@@ -280,29 +331,33 @@ public class Main extends JavaPlugin implements Listener {
 
 	@EventHandler
 	public void onSpawn(PlayerRespawnEvent event) {
-		 final Player player = event.getPlayer();
-	    getServer().getScheduler().scheduleSyncDelayedTask(this, new Runnable() {
-	    	
-	        public void run() {         
-	        	
-	        	if (isInQuake(player))
-	    		{
-	    			
-	    			ItemStack woodhoe = new ItemStack(Material.WOOD_HOE, 1);
+		final Player player = event.getPlayer();
+		getServer().getScheduler().scheduleSyncDelayedTask(this,
+				new Runnable() {
 
-	    			player.getInventory().addItem(woodhoe);
-	    			player.getInventory().setHeldItemSlot(0);
-	    			ItemStack is = player.getInventory().getItem(0);
+					public void run() {
 
-	    			ItemMeta im = is.getItemMeta();
-	    			im.setDisplayName("RailGun");
-	    			is.setItemMeta(im);
-	    			player.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, 12000, 1));
-	    			player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 12000, 3));
-	    			player.teleport(beforeSpawn());
-	    		}
-	        }
-	    }, 20); // ******** The 20. is the delay for the task in TICKS ********
+						if (isInQuake(player)) {
+
+							ItemStack woodhoe = new ItemStack(
+									Material.WOOD_HOE, 1);
+
+							player.getInventory().addItem(woodhoe);
+							player.getInventory().setHeldItemSlot(0);
+							ItemStack is = player.getInventory().getItem(0);
+
+							ItemMeta im = is.getItemMeta();
+							im.setDisplayName("RailGun");
+							is.setItemMeta(im);
+							player.addPotionEffect(new PotionEffect(
+									PotionEffectType.JUMP, 12000, 1));
+							player.addPotionEffect(new PotionEffect(
+									PotionEffectType.SPEED, 12000, 3));
+							player.teleport(beforeSpawn());
+						}
+					}
+				}, 20); // ******** The 20. is the delay for the task in TICKS
+						// ********
 	}
 
 }
