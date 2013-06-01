@@ -1,9 +1,12 @@
 package fr.ironcraft.quakecraft;
 
+import java.awt.List;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Random;
 import java.util.logging.Logger;
 
 import org.bukkit.Bukkit;
@@ -66,6 +69,7 @@ public class Main extends JavaPlugin implements Listener {
 
 	public void onDisable() {
 		this.saveConfig();
+		
 	}
 
 	private final HashMap<Player, SimpleInventorySaver> inventorySaver = new HashMap<Player, SimpleInventorySaver>();
@@ -90,7 +94,7 @@ public class Main extends JavaPlugin implements Listener {
 		} 
 		fileConfig = YamlConfiguration.loadConfiguration(file);
 		checkforupdate = fileConfig.getBoolean("CheckforUpdate");
-		world = this.getConfig().getString("world");
+		world = this.getConfig().getString("defaultspawn.world");
 	}
 
 	public boolean onCommand(CommandSender sender, Command command,
@@ -107,7 +111,7 @@ public class Main extends JavaPlugin implements Listener {
 
 					if (cmd.equals("join")) {
 
-						if (!(this.getConfig().getInt("ydefaultspawn") == 0)) {
+						if (!(this.getConfig().getInt("defaultspawn.y") == 0)) {
 							if (Players.size() < 8
 									&& (!Players.contains(player)) && !isStart()) {
 								SimpleInventorySaver sis = inventorySaver
@@ -151,7 +155,7 @@ public class Main extends JavaPlugin implements Listener {
 							}
 
 						}
-						if (Players.size() == 2) {
+						if (Players.size() == 6 && !isLoading) {
 							isLoading = true;
 							getServer().getScheduler()
 									.scheduleSyncRepeatingTask(this,
@@ -200,7 +204,7 @@ public class Main extends JavaPlugin implements Listener {
 							return true;
 						}
 
-						return true;
+					
 					}
 					if (cmd.equals("forcestart")) {
 						if (Players.size() < 6) {
@@ -240,24 +244,55 @@ public class Main extends JavaPlugin implements Listener {
 							}
 						} else {
 							sender.sendMessage("§7[§cQuake§7] You can not leave the game now !");
+							return true;
 						}
 
 					}
 					if (cmd.equals("setdefaultspawn")) {
-						this.getConfig().set("xdefaultspawn",
+						this.getConfig().set("defaultspawn.x",
 								player.getLocation().getX());
-						this.getConfig().set("ydefaultspawn",
+						this.getConfig().set("defaultspawn.y",
 								player.getLocation().getY());
-						this.getConfig().set("zdefaultspawn",
+						this.getConfig().set("defaultspawn.z",
 								player.getLocation().getZ());
-						this.getConfig().set("world",
+						this.getConfig().set("defaultspawn.world",
 								player.getLocation().getWorld().getName());
-						this.saveConfigFile();
+						
+						this.saveConfig();
 						sender.sendMessage("§7[§cQuake§7] Configuration du spawn d'arriver Ok. Merci de définir d'autre spawn avec /quakecraft setspawnrandom");
 						return true;
 					}
+					
+				  
 				}
-
+				if (args.length == 2) {
+					cmd = args[0];
+					if (cmd.equals("setspawnrandom")) {
+						String arg2 = args[1];
+						if(arg2 != null)
+						{
+							int arg = Integer.parseInt(arg2);
+							this.getConfig().set("spawn."+arg+".x",
+									player.getLocation().getX());
+							this.getConfig().set("spawn."+arg+".y",
+									player.getLocation().getY());
+							this.getConfig().set("spawn."+arg+".z",
+									player.getLocation().getZ());
+							this.getConfig().set("spawn."+arg+".world",
+									player.getLocation().getWorld().getName());
+							
+							this.saveConfig();
+							sender.sendMessage("§7[§cQuake§7] Configuration du spawn d'arriver n°"+arg+" Ok");
+							return true;
+						}
+						else
+						{
+							return false;
+						}
+						
+						
+					}
+				}
 			}
 
 		}
@@ -301,11 +336,44 @@ public class Main extends JavaPlugin implements Listener {
 	}
 
 	public Location beforeSpawn() {
+		world = this.getConfig().getString("defaultspawn.world");
+		int x = this.getConfig().getInt("defaultspawn.x");
+		int y = this.getConfig().getInt("defaultspawn.y");
+		int z = this.getConfig().getInt("defaultspawn.z");
 
-		int x = this.getConfig().getInt("xdefaultspawn");
-		int y = this.getConfig().getInt("ydefaultspawn");
-		int z = this.getConfig().getInt("zdefaultspawn");
+		Location redSpawn = new Location(getWorld(), x, y, z);
+		redSpawn.setPitch(12);
+		redSpawn.setYaw(-90);
 
+		return redSpawn;
+	}
+	public Location Spawn() {
+		world = this.getConfig().getString("defaultspawn.world");
+		int x = 0;
+		int y = 0;
+		int z = 0;
+		  Random rand = new Random();
+		while(true)
+        {
+            int pick = rand.nextInt(10);
+           x = this.getConfig().getInt("spawn."+pick+".x");
+    	   y = this.getConfig().getInt("spawn."+pick+".y");
+    	   z = this.getConfig().getInt("spawn."+pick+".z");
+    	   
+    	   if(x == 0 && y == 0 && z == 0)
+    	   {
+    		   
+               x = this.getConfig().getInt("spawn."+pick+".x");
+        	   y = this.getConfig().getInt("spawn."+pick+".y");
+        	   z = this.getConfig().getInt("spawn."+pick+".z");
+    	   }
+    	   else
+    	   {
+    		   break;
+    	   }
+        	
+					
+        }
 		Location redSpawn = new Location(getWorld(), x, y, z);
 		redSpawn.setPitch(12);
 		redSpawn.setYaw(-90);
@@ -315,19 +383,18 @@ public class Main extends JavaPlugin implements Listener {
 
 	HashMap<Object, Entity> fireworkbyplayer = new HashMap<Object, Entity>();
 
-	public void saveConfigFile() {
-		File file = new File(getDataFolder(), "config.yml");
-		fileConfig = YamlConfiguration.loadConfiguration(file);
-
-		try // Puis on sauvegarde!
-		{
-			fileConfig.save(file);
-		} catch (IOException ex) {
-		}
-	}
+	
 
 	public World getWorld() {
-		return getServer().getWorld(world);
+		if(world != null)
+		{
+			return getServer().getWorld(world);
+		}
+		else
+		{
+			return getServer().getWorlds().get(0);
+		}
+		
 
 	}
 
@@ -356,6 +423,8 @@ public class Main extends JavaPlugin implements Listener {
 							player.addPotionEffect(new PotionEffect(
 									PotionEffectType.SPEED, 12000, 3));
 							player.teleport(beforeSpawn());
+							player.teleport(Spawn());
+							
 						}
 					}
 				}, 20); 

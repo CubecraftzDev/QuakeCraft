@@ -5,3 +5,15 @@ commands:
     quakecraft:
         description: QuakeCraft.
         usage: /quakecraft 
+    quakecraft join:
+        description: Join The QuakeGame.
+        usage: /quakecraft join 
+    quakecraft quit:
+        description: Quit The QuakeGame.
+        usage: /quakecraft quit 
+    quakecraft forcestart:
+        description: Force to start The QuakeGame.
+        usage: /quakecraft forcestart 
+    quakecraft setdefaultspawn:
+        description: SetDefaultSpawn for The QuakeGame.
+        usage: /quakecraft setdefaultspawn 
