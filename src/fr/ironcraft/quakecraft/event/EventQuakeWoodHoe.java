@@ -70,7 +70,7 @@ public class EventQuakeWoodHoe implements Listener {
 			Player shooter = (Player) ((Arrow) e.getDamager()).getShooter();
 			Player target = (Player) e.getEntity();
 
-			e.setCancelled(true);
+			
 			if (Main.isInQuake(target)) {
 				if (shooter != target && shooter != null && target != null) {
 
@@ -81,7 +81,7 @@ public class EventQuakeWoodHoe implements Listener {
 				}
 			}
 
-			e.getEntity().remove();
+			e.getDamager().remove();
 
 		}
 
