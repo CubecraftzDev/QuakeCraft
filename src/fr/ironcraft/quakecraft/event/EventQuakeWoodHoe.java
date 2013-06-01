@@ -79,9 +79,10 @@ public class EventQuakeWoodHoe implements Listener {
 					score.setScore(scorepoint + 1);
 					addFrag(shooter, target, "Rocket Launcher");
 				}
+				e.getDamager().remove();
 			}
 
-			e.getDamager().remove();
+			
 
 		}
 
@@ -93,7 +94,7 @@ public class EventQuakeWoodHoe implements Listener {
 		if (e.getEntity() instanceof Arrow) {
 
 			List<Entity> eList = e.getEntity().getNearbyEntities(2, 2, 2);
-
+            
 			for (Entity pl : eList) {
 
 				if (pl instanceof Player) {
@@ -121,11 +122,11 @@ public class EventQuakeWoodHoe implements Listener {
 							addFrag(shooter, target, "Rocket Launcher");
 						}
 					}
-
+					e.getEntity().remove();
 				}
 			}
 
-			e.getEntity().remove();
+			
 		}
 	}
 
