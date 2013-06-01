@@ -41,6 +41,7 @@ public class Main extends JavaPlugin implements Listener {
 	public ScoreboardManager manager;
 	public Scoreboard board;
 	public static boolean isStart = false;
+	public static boolean isLoading = false;
 
 	public Main() {
 
@@ -73,24 +74,20 @@ public class Main extends JavaPlugin implements Listener {
 		// On initialise le fichier
 		File file = new File(getDataFolder(), "config.yml");
 
-		if (!file.exists()) // Si le fichier n'existe pas
+		if (!file.exists()) 
 		{
-			// On initialise le fileConfig en ouvrant une configuration, ici
-			// notre fichier
+			
 			YamlConfiguration fileConfig = YamlConfiguration
 					.loadConfiguration(file);
-			// On met des choses dedans, comme un boolean, un int, et un String!
+			
 			fileConfig.set("CheckforUpdate", true);
 
-			try { // On essaie de sauvegarder
+			try { 
 				fileConfig.save(file);
 			} catch (IOException ex) {
 
 			}
-		} // Maintenant, on est sûr que le fichier existe et qu'il y a des trucs
-			// dedans...
-
-		// Là, on initialise le fileConfig.
+		} 
 		fileConfig = YamlConfiguration.loadConfiguration(file);
 		checkforupdate = fileConfig.getBoolean("CheckforUpdate");
 		world = this.getConfig().getString("world");
@@ -140,6 +137,10 @@ public class Main extends JavaPlugin implements Listener {
 										PotionEffectType.SPEED, 12000, 3));
 								Players.add(player);
 								player.teleport(beforeSpawn());
+								if(!isLoading)
+								{
+									compteur = 60;
+								}
 								for (Player p : Players) {
 									p.sendMessage("§7[§cQuake§7] "
 											+ player.getName()
@@ -150,8 +151,8 @@ public class Main extends JavaPlugin implements Listener {
 							}
 
 						}
-						if (Players.size() == 6) {
-
+						if (Players.size() == 2) {
+							isLoading = true;
 							getServer().getScheduler()
 									.scheduleSyncRepeatingTask(this,
 											new Runnable() {
@@ -175,10 +176,11 @@ public class Main extends JavaPlugin implements Listener {
 
 															Bukkit.broadcastMessage("§7[§cQuake§7] Quake Start !");
 															isStart = true;
-															compteur--;
+															isLoading = false;
+															compteur = -1;
 															for (Player online : Players) {
 																score = objective.getScore(online);
-																score.setScore(0); // Example
+																score.setScore(0); 
 
 															}
 
@@ -205,7 +207,7 @@ public class Main extends JavaPlugin implements Listener {
 							isStart = true;
 							for (Player online : Players) {
 								score = objective.getScore(online);
-								score.setScore(0); // Example
+								score.setScore(0); 
 
 							}
 
@@ -356,8 +358,7 @@ public class Main extends JavaPlugin implements Listener {
 							player.teleport(beforeSpawn());
 						}
 					}
-				}, 20); // ******** The 20. is the delay for the task in TICKS
-						// ********
+				}, 20); 
 	}
 
 }

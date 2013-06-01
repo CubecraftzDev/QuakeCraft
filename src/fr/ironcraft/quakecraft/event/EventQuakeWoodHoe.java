@@ -132,6 +132,7 @@ public class EventQuakeWoodHoe implements Listener {
 	public void addFrag(Player p, Player target, String weapon) {
 
 		target.setHealth(0);
+		System.out.println(target.getHealth());
 		Bukkit.getServer()
 				.broadcastMessage(
 						"§7[§cQuake§7]: " + p.getName() + " gibbed "
@@ -169,6 +170,7 @@ public class EventQuakeWoodHoe implements Listener {
 						arrow.setVelocity(p.getLocation().getDirection()
 								.multiply(4));
 						arrow.setShooter(p);
+						pReloadRocket.remove(p.getName());
 						pReloadRocket.put(p.getName(),
 								System.currentTimeMillis());
 					}
