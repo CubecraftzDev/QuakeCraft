@@ -473,7 +473,7 @@ public class Main extends JavaPlugin implements Listener {
 						Score score = Main.getObjective().getScore(player);
 					    int points = score.getScore();
 					    
-					    if(points >= 2)
+					    if(points >= 25)
 					    {
 					    	
 					    	finish(player);
