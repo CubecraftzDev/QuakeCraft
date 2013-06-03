@@ -3,13 +3,24 @@ package fr.ironcraft.quakecraft.event;
 import java.util.HashMap;
 import java.util.List;
 
-import org.bukkit.*;
-import org.bukkit.entity.*;
-import org.bukkit.event.*;
-import org.bukkit.event.block.*;
-import org.bukkit.event.entity.*;
+import org.bukkit.Bukkit;
+import org.bukkit.Effect;
+import org.bukkit.Material;
+import org.bukkit.Sound;
+import org.bukkit.entity.Arrow;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
-import org.bukkit.event.player.*;
+import org.bukkit.event.entity.FoodLevelChangeEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.entity.ProjectileHitEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.scoreboard.Score;
 
@@ -60,6 +71,9 @@ public class EventQuakeWoodHoe implements Listener {
 			e.getDrops().clear();
 			e.setDeathMessage("");
 		}
+		
+		
+
 
 	}
 
@@ -133,7 +147,7 @@ public class EventQuakeWoodHoe implements Listener {
 	public void addFrag(Player p, Player target, String weapon) {
 
 		target.setHealth(0);
-		System.out.println(target.getHealth());
+	
 		Bukkit.getServer()
 				.broadcastMessage(
 						"§7[§cQuake§7]: " + p.getName() + " gibbed "

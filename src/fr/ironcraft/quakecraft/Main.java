@@ -1,16 +1,14 @@
 package fr.ironcraft.quakecraft;
 
-import java.awt.List;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Random;
 import java.util.logging.Logger;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -20,6 +18,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -37,7 +36,7 @@ import fr.ironcraft.quakecraft.utils.SimpleInventorySaver;
 public class Main extends JavaPlugin implements Listener {
 
 	Logger log = Logger.getLogger("minecraft");
-	static ArrayList<Player> Players = new ArrayList<Player>();
+	static ArrayList<Player> Players;
 	private YamlConfiguration fileConfig;
 	public boolean checkforupdate = false;
 	public String world;
@@ -45,15 +44,19 @@ public class Main extends JavaPlugin implements Listener {
 	public Scoreboard board;
 	public static boolean isStart = false;
 	public static boolean isLoading = false;
-
+	public static boolean isFinish = false;
+	public static boolean isSelecting = false;
+    public String winnerName;
 	public Main() {
 
 	}
 
 	HashMap<Player, GameMode> Gamemode = new HashMap<Player, GameMode>();
+	HashMap<Player, Location> Location = new HashMap<Player, Location>();
 	int compteur = 60; 
 
 	public void onEnable() {
+		Players = new ArrayList<Player>();
 		this.loadConfigFile();
 		manager = Bukkit.getScoreboardManager();
 		board = manager.getNewScoreboard();
@@ -104,16 +107,17 @@ public class Main extends JavaPlugin implements Listener {
 			Player player = (Player) sender; // Le player est le sender
 
 			String cmd;
-			if (commandLabel.equals("quakecraft")) {
+			if (commandLabel.equals("quakecraft") ) {
 
 				if (args.length == 1) {
 					cmd = args[0];
 
-					if (cmd.equals("join")) {
+					if (cmd.equals("join")&& sender.hasPermission("quakecraft.join")) {
 
 						if (!(this.getConfig().getInt("defaultspawn.y") == 0)) {
 							if (Players.size() < 8
 									&& (!Players.contains(player)) && !isStart()) {
+								isSelecting = true;
 								SimpleInventorySaver sis = inventorySaver
 										.get(player);
 								if (sis == null) {
@@ -133,7 +137,7 @@ public class Main extends JavaPlugin implements Listener {
 								im.setDisplayName("RailGun");
 								is.setItemMeta(im);
 								Gamemode.put(player, player.getGameMode());
-
+                                Location.put(player, player.getLocation());
 								player.setGameMode(GameMode.ADVENTURE);
 								player.addPotionEffect(new PotionEffect(
 										PotionEffectType.JUMP, 12000, 1));
@@ -181,10 +185,13 @@ public class Main extends JavaPlugin implements Listener {
 															Bukkit.broadcastMessage("§7[§cQuake§7] Quake Start !");
 															isStart = true;
 															isLoading = false;
+															isSelecting = false;
 															compteur = -1;
+															
 															for (Player online : Players) {
 																score = objective.getScore(online);
 																score.setScore(0); 
+																online.teleport(Spawn());
 
 															}
 
@@ -206,9 +213,10 @@ public class Main extends JavaPlugin implements Listener {
 
 					
 					}
-					if (cmd.equals("forcestart")) {
+					if (cmd.equals("forcestart") && sender.hasPermission("quakecraft.forcestart")) {
 						if (Players.size() < 6) {
 							isStart = true;
+							isSelecting = false;
 							for (Player online : Players) {
 								score = objective.getScore(online);
 								score.setScore(0); 
@@ -222,7 +230,7 @@ public class Main extends JavaPlugin implements Listener {
 						return true;
 
 					}
-					if (cmd.equals("quit")) {
+					if (cmd.equals("quit") && sender.hasPermission("quakecraft.quit")) {
 						if (!isStart()) {
 							if (Players.contains(player)) {
 								Players.remove(player);
@@ -233,7 +241,9 @@ public class Main extends JavaPlugin implements Listener {
 
 								}
 								player.setGameMode(Gamemode.get(player));
+								player.teleport(Location.get(player));
 								Gamemode.remove(player);
+								Location.remove(player);
 								sis.restore(player);
 								for (PotionEffect effect : player
 										.getActivePotionEffects()) {
@@ -248,7 +258,7 @@ public class Main extends JavaPlugin implements Listener {
 						}
 
 					}
-					if (cmd.equals("setdefaultspawn")) {
+					if (cmd.equals("setdefaultspawn") && sender.hasPermission("quakecraft.admin")) {
 						this.getConfig().set("defaultspawn.x",
 								player.getLocation().getX());
 						this.getConfig().set("defaultspawn.y",
@@ -267,7 +277,7 @@ public class Main extends JavaPlugin implements Listener {
 				}
 				if (args.length == 2) {
 					cmd = args[0];
-					if (cmd.equals("setspawnrandom")) {
+					if (cmd.equals("setspawnrandom")&& sender.hasPermission("quakecraft.admin")) {
 						String arg2 = args[1];
 						if(arg2 != null)
 						{
@@ -397,17 +407,38 @@ public class Main extends JavaPlugin implements Listener {
 		
 
 	}
+	@EventHandler
+	public void onMove(final PlayerMoveEvent event) {
+		getServer().getScheduler().scheduleSyncDelayedTask(this,
+				new Runnable() {
 
+					public void run() {
+
+						if (!Players.isEmpty()) {
+							
+							if(!isStart && !isSelecting)
+							{
+								Players.clear();
+								
+							}
+							checkPoint(event.getPlayer());
+							
+						}
+					}
+				}, 20); 
+	}
 	@EventHandler
 	public void onSpawn(PlayerRespawnEvent event) {
+		
 		final Player player = event.getPlayer();
+		
+	
 		getServer().getScheduler().scheduleSyncDelayedTask(this,
 				new Runnable() {
 
 					public void run() {
 
 						if (isInQuake(player)) {
-
 							ItemStack woodhoe = new ItemStack(
 									Material.WOOD_HOE, 1);
 
@@ -422,6 +453,7 @@ public class Main extends JavaPlugin implements Listener {
 									PotionEffectType.JUMP, 12000, 1));
 							player.addPotionEffect(new PotionEffect(
 									PotionEffectType.SPEED, 12000, 3));
+							checkPoint(player.getPlayer());
 							player.teleport(beforeSpawn());
 							player.teleport(Spawn());
 							
@@ -429,5 +461,128 @@ public class Main extends JavaPlugin implements Listener {
 					}
 				}, 20); 
 	}
+	  public void checkPoint(Player lastdeadh)
+	    {
+		  try
+		  {
+			  if(!isFinish)
+			  {
+				  for(Player player : Players)
+					{
+					  
+						Score score = Main.getObjective().getScore(player);
+					    int points = score.getScore();
+					    
+					    if(points >= 2)
+					    {
+					    	
+					    	finish(player);
+					    	
+					    }
+					} 
+			  }
+			  else
+			  {
+				  if(!Players.isEmpty())
+				  {
+				  forcefinish(Bukkit.getPlayer(winnerName));
+				  }
+			  }
+			
+		  }
+		  catch(Exception e)
+		  {
+			  
+		  }
+			
+	    }
+	  
+	  public void finish(Player winner)
+	  {
+		  winnerName = winner.getDisplayName();
+		  String message = "§7[§cQuake§7] " + winner.getDisplayName() + " win the game !";
+		  Iterator<Player> i =Players.iterator();
+		  while(i.hasNext())
+			{
+			  Player player = i.next();
+			  
+			  player.sendMessage(message);
+//			  Players.remove(player);
+			  
+				player.setScoreboard(manager.getNewScoreboard());
+				SimpleInventorySaver sis = inventorySaver
+						.get(player);
+				if (sis == null) {
 
+				}
+				player.setGameMode(Gamemode.get(player));
+				player.teleport(Location.get(player));
+				Gamemode.remove(player);
+				Location.remove(player);
+				sis.restore(player);
+				for (PotionEffect effect : player
+						.getActivePotionEffects()) {
+					player.removePotionEffect(effect.getType());
+
+				}
+				
+				isFinish = true;
+				isStart = false;
+				}
+		  i.remove();
+	  }
+		  public void forcefinish(Player player)
+		  {
+			  
+			  String message = "§7[§cQuake§7] " + winnerName + " win the game !";
+			 
+			 
+				  
+				  if(Players.equals(player))
+						  {
+					  player.sendMessage(message);
+						 
+				  Players.remove(player);
+				
+					player.setScoreboard(manager.getNewScoreboard());
+					SimpleInventorySaver sis = inventorySaver
+							.get(player);
+					if (sis == null) {
+
+					}
+					player.setGameMode(Gamemode.get(player));
+					player.teleport(Location.get(player));
+					Gamemode.remove(player);
+					Location.remove(player);
+					sis.restore(player);
+					for (PotionEffect effect : player
+							.getActivePotionEffects()) {
+						player.removePotionEffect(effect.getType());
+
+					}
+									
+						  }
+			  if(Players.isEmpty())
+			  {
+				  isStart = false;
+				  isFinish = false;
+			  }
+//		  lastdeadh.sendMessage(message);
+//		  Players.remove(lastdeadh);
+//		  lastdeadh.setScoreboard(manager.getNewScoreboard());
+//			SimpleInventorySaver sis = inventorySaver
+//					.get(lastdeadh);
+//			if (sis == null) {
+//
+//			}
+//			lastdeadh.setGameMode(Gamemode.get(lastdeadh));
+//			Gamemode.remove(lastdeadh);
+//			sis.restore(lastdeadh);
+//			for (PotionEffect effect : lastdeadh
+//					.getActivePotionEffects()) {
+//				lastdeadh.removePotionEffect(effect.getType());
+//
+//			}
+//		  
+	  }
 }
