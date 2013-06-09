@@ -117,6 +117,7 @@ public class Main extends JavaPlugin implements Listener {
 						if (!(this.getConfig().getInt("defaultspawn.y") == 0)) {
 							if (Players.size() < 8
 									&& (!Players.contains(player)) && !isStart()) {
+								player.teleport(beforeSpawn());
 								isSelecting = true;
 								SimpleInventorySaver sis = inventorySaver
 										.get(player);
@@ -125,10 +126,11 @@ public class Main extends JavaPlugin implements Listener {
 									inventorySaver.put(player, sis);
 								}
 								sis.save(player);
+								
 								player.getInventory().clear();
 								ItemStack woodhoe = new ItemStack(
 										Material.WOOD_HOE, 1);
-
+								
 								player.getInventory().addItem(woodhoe);
 								player.getInventory().setHeldItemSlot(0);
 								ItemStack is = player.getInventory().getItem(0);
@@ -144,7 +146,7 @@ public class Main extends JavaPlugin implements Listener {
 								player.addPotionEffect(new PotionEffect(
 										PotionEffectType.SPEED, 12000, 3));
 								Players.add(player);
-								player.teleport(beforeSpawn());
+								
 								if(!isLoading)
 								{
 									compteur = 60;
@@ -439,6 +441,8 @@ public class Main extends JavaPlugin implements Listener {
 					public void run() {
 
 						if (isInQuake(player)) {
+							player.teleport(beforeSpawn());
+							player.teleport(Spawn());
 							ItemStack woodhoe = new ItemStack(
 									Material.WOOD_HOE, 1);
 
@@ -454,8 +458,7 @@ public class Main extends JavaPlugin implements Listener {
 							player.addPotionEffect(new PotionEffect(
 									PotionEffectType.SPEED, 12000, 3));
 							checkPoint(player.getPlayer());
-							player.teleport(beforeSpawn());
-							player.teleport(Spawn());
+						
 							
 						}
 					}
