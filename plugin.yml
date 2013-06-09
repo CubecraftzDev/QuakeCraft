@@ -1,6 +1,6 @@
 name: QuakeCraft
 main: fr.ironcraft.quakecraft.Main
-version: 0.1.1
+version: 0.1.2
 commands:
     quakecraft:
         description: QuakeCraft.
@@ -20,3 +20,6 @@ commands:
     quakecraft setdefaultspawn:
         description: setspawnrandom for The QuakeGame.
         usage: /quakecraft setspawnrandom [x]
+    quakecraft joinauto:
+        description: joinauto for The QuakeGame.
+        usage: /quakecraft joinauto
