@@ -2,6 +2,7 @@ package fr.ironcraft.quakecraft;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -32,12 +33,13 @@ public class Main extends JavaPlugin implements Listener {
 	public String world;
 	public ScoreboardManager manager;
 	public Scoreboard board;
-	public static boolean isStart = false;
-	public static boolean isLoading = false;
-	public static boolean isFinish = false;
-	public static boolean isSelecting = false;
+	public static boolean isStart, isLoading, isFinish, isSelecting;
 	public String winnerName;
-
+	private NMS nmsAccess;
+	private final HashMap<Player, SimpleInventorySaver> inventorySaver = new HashMap<Player, SimpleInventorySaver>();
+	private boolean joinauto;
+	public static Score score;
+	public static Objective objective;
 	public Main() {
 
 	}
@@ -47,17 +49,28 @@ public class Main extends JavaPlugin implements Listener {
 	int compteur = 60;
 
 	public void onEnable() {
-		Players = new ArrayList<Player>();
-		this.loadConfigFile();
-		manager = Bukkit.getScoreboardManager();
-		board = manager.getNewScoreboard();
-		objective = board.registerNewObjective("lives", "dummy");
-		objective.setDisplaySlot(DisplaySlot.SIDEBAR);
-		objective.setDisplayName("§lLeaderBoard");
+		try
+		{
+			enableCraftbukkitAccess();
+			Players = new ArrayList<Player>();
+			this.loadConfigFile();
+			manager = Bukkit.getScoreboardManager();
+			board = manager.getNewScoreboard();
+			objective = board.registerNewObjective("lives", "dummy");
+			objective.setDisplaySlot(DisplaySlot.SIDEBAR);
+			objective.setDisplayName("§lLeaderBoard");
 
-		getServer().getPluginManager().registerEvents(new EventQuakeWoodHoe(),
-				this);
-		getServer().getPluginManager().registerEvents(this, this);
+			getServer().getPluginManager().registerEvents(new EventQuakeWoodHoe(),
+					this);
+			getServer().getPluginManager().registerEvents(this, this);
+		}
+		catch(Exception e)
+		{
+			 System.out.println("Hey, j'ai pas reusis a me start ! A tu la version 1.5.1 minimum ????");
+			    this.setEnabled(false);
+		}
+		
+	
 
 	}
 
@@ -66,8 +79,7 @@ public class Main extends JavaPlugin implements Listener {
 
 	}
 
-	private final HashMap<Player, SimpleInventorySaver> inventorySaver = new HashMap<Player, SimpleInventorySaver>();
-	private boolean joinauto;
+
 
 	public void loadConfigFile() {
 		// On initialise le fichier
@@ -439,8 +451,7 @@ public class Main extends JavaPlugin implements Listener {
 		return false;
 	}
 
-	public static Score score;
-	public static Objective objective;
+
 
 	public static ArrayList<Player> getPlayers() {
 		if (Players != null) {
@@ -705,4 +716,47 @@ public class Main extends JavaPlugin implements Listener {
 	public void setJoinauto(boolean joinauto) {
 		this.joinauto = joinauto;
 	}
+	public void enableCraftbukkitAccess()
+	{
+		   // DO Stuff
+        String packageName = getServer().getClass().getPackage().getName();
+        String[] packageSplit = packageName.split("\\.");
+        String version = packageSplit[packageSplit.length - 1];
+        // Fun Stuff
+        try {
+                Class<?> nmsClass = Class.forName("fr.ironcraft.quakecraft.ver." + version);
+                if(NMS.class.isAssignableFrom(nmsClass)){
+                        this.nmsAccess = (NMS) nmsClass.getConstructor().newInstance();
+                }else
+                {
+                        System.out.println("Une erreur est survenu contactez l'auteur et donne lui cette verion (" + version+")");
+                        this.setEnabled(false);
+                }
+        } catch (ClassNotFoundException e) {
+                System.out.println("Hey, Dit a mon auteur que je suis pas compatible avec la version " + version);
+                this.setEnabled(false);
+        } catch (InstantiationException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+        } catch (IllegalAccessException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+        } catch (IllegalArgumentException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+        } catch (InvocationTargetException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+        } catch (NoSuchMethodException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+        } catch (SecurityException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+        }
+        if(this.isEnabled()){
+//                System.out.println(nmsAccess.getIsWhitelist());
+        }
+	}
+	
 }
