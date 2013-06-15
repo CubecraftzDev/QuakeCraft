@@ -66,11 +66,14 @@ public class EventQuakeWoodHoe implements Listener {
 
 	@EventHandler
 	public void onDeath(PlayerDeathEvent e) {
-
+	    final Player player = e.getEntity();
 		if (Main.isInQuake(e.getEntity())) {
 			e.getDrops().clear();
 			e.setDeathMessage("");
+			
+			
 		}
+		
 		
 		
 

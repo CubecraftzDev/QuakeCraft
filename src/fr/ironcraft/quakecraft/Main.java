@@ -35,11 +35,12 @@ public class Main extends JavaPlugin implements Listener {
 	public Scoreboard board;
 	public static boolean isStart, isLoading, isFinish, isSelecting;
 	public String winnerName;
-	private NMS nmsAccess;
+	private static NMS nmsAccess;
 	private final HashMap<Player, SimpleInventorySaver> inventorySaver = new HashMap<Player, SimpleInventorySaver>();
 	private boolean joinauto;
 	public static Score score;
 	public static Objective objective;
+	public static Main main = new Main();
 	public Main() {
 
 	}
@@ -48,6 +49,10 @@ public class Main extends JavaPlugin implements Listener {
 	HashMap<Player, Location> Location = new HashMap<Player, Location>();
 	int compteur = 60;
 
+	public static NMS getNMS()
+	{
+		return nmsAccess;
+	}
 	public void onEnable() {
 		try
 		{
@@ -67,7 +72,7 @@ public class Main extends JavaPlugin implements Listener {
 		catch(Exception e)
 		{
 			 System.out.println("Hey, j'ai pas reusis a me start ! A tu la version 1.5.1 minimum ????");
-			    this.setEnabled(false);
+			 this.setEnabled(false);
 		}
 		
 	
@@ -570,7 +575,7 @@ public class Main extends JavaPlugin implements Listener {
 					public void run() {
 
 						if (isInQuake(player)) {
-							player.teleport(beforeSpawn());
+							
 							player.teleport(Spawn());
 							ItemStack woodhoe = new ItemStack(
 									Material.WOOD_HOE, 1);
@@ -756,6 +761,7 @@ public class Main extends JavaPlugin implements Listener {
         }
         if(this.isEnabled()){
 //                System.out.println(nmsAccess.getIsWhitelist());
+        	nmsAccess.load();
         }
 	}
 	
