@@ -25,6 +25,8 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.scoreboard.Score;
 
 import fr.ironcraft.quakecraft.Main;
+import fr.ironcraft.quakecraft.scoreboard.ScoreBoardManager;
+
 
 public class EventQuakeWoodHoe implements Listener {
 
@@ -66,8 +68,7 @@ public class EventQuakeWoodHoe implements Listener {
 
 	@EventHandler
 	public void onDeath(PlayerDeathEvent e) {
-	    final Player player = e.getEntity();
-		if (Main.isInQuake(e.getEntity())) {
+	    if (Main.isInQuake(e.getEntity())) {
 			e.getDrops().clear();
 			e.setDeathMessage("");
 			
@@ -91,7 +92,7 @@ public class EventQuakeWoodHoe implements Listener {
 			if (Main.isInQuake(target)) {
 				if (shooter != target && shooter != null && target != null) {
 
-					Score score = Main.getObjective().getScore(shooter);
+					Score score = ScoreBoardManager.getObjective().getScore(shooter);
 					int scorepoint = score.getScore();
 					score.setScore(scorepoint + 1);
 					addFrag(shooter, target, "Rocket Launcher");
@@ -133,7 +134,7 @@ public class EventQuakeWoodHoe implements Listener {
 						if (target.getEntityId() != shooter.getEntityId()
 								&& shooter != null && target != null) {
 
-							Score score = Main.getObjective().getScore(shooter);
+							Score score = ScoreBoardManager.getObjective().getScore(shooter);
 							int scorepoint = score.getScore();
 							score.setScore(scorepoint + 1);
 							addFrag(shooter, target, "Rocket Launcher");
