@@ -15,7 +15,7 @@ import fr.ironcraft.quakecraft.scoreboard.ScoreBoardManager;
 import fr.ironcraft.quakecraft.utils.SimpleInventorySaver;
 
 public class CommandJoin implements ICommands {
-	public static int compteur = 60;
+	
 
 	@Override
 	public boolean onCommand(Player player, final Main instance) {
@@ -55,7 +55,7 @@ public class CommandJoin implements ICommands {
 				Main.getPlayers().add(player);
 
 				if (!Main.isLoading) {
-					compteur = 60;
+					instance.compteur = 60;
 				}
 				for (Player p : Main.getPlayers()) {
 					p.sendMessage("§7[§cQuake§7] " + player.getName()
@@ -73,24 +73,24 @@ public class CommandJoin implements ICommands {
 
 						public void run() {
 
-							if (compteur != -1) {
+							if (instance.compteur != -1) {
 
-								if (compteur != 0) {
+								if (instance.compteur != 0) {
 
-									if (compteur == 60 || compteur == 30
-											|| compteur <= 10) {
+									if (instance.compteur == 60 || instance.compteur == 30
+											|| instance.compteur <= 10) {
 										Bukkit.broadcastMessage("§7[§cQuake§7]: The Game Start in "
-												+ compteur + " seconds");
+												+ instance.compteur + " seconds");
 									}
 
-									compteur--;
+									instance.compteur--;
 								} else {
 
 									Bukkit.broadcastMessage("§7[§cQuake§7] Quake Start !");
 									Main.isStart = true;
 									Main.isLoading = false;
 									Main.isSelecting = false;
-									compteur = -1;
+									instance.compteur = -1;
 
 									for (Player online : Main.getPlayers()) {
 										ScoreBoardManager.score = ScoreBoardManager.objective

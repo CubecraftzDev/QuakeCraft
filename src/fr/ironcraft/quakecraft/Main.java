@@ -11,11 +11,8 @@ import java.util.logging.Logger;
 
 import org.bukkit.*;
 import org.bukkit.command.*;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.*;
-import org.bukkit.event.*;
-import org.bukkit.event.player.*;
 import org.bukkit.inventory.*;
 import org.bukkit.inventory.meta.*;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -30,22 +27,28 @@ import fr.ironcraft.quakecraft.utils.*;
 public class Main extends JavaPlugin {
 
 	public Logger log = Logger.getLogger("minecraft");
-	private static ArrayList<Player> Players;
+
 	private YamlConfiguration fileConfig;
-	private boolean checkforupdate = false;
-	private String world;
+	private String world, winnerName;
+	// Début boolean
+	public static boolean isStart, isLoading, isFinish, isSelecting,
+			checkforupdate, joinauto, kickonfinish;
+	// Fin boolean
 
-	public static boolean isStart, isLoading, isFinish, isSelecting;
-	private String winnerName;
-	private static NMS nmsAccess;
-	public final static HashMap<Player, SimpleInventorySaver> inventorySaver = new HashMap<Player, SimpleInventorySaver>();
-	private boolean joinauto;
-	private boolean kickonfinish;
+	// Début int
+	public int compteur = 60;
 	public static int ymap;
-	public static Main main = new Main();
+	private int maxpoint;
+	// Fin int
+	private static NMS nmsAccess;
 
+	// Début HashMap
 	public static HashMap<Player, GameMode> Gamemode = new HashMap<Player, GameMode>();
 	public static HashMap<Player, Location> Location = new HashMap<Player, Location>();
+	public final static HashMap<Player, SimpleInventorySaver> inventorySaver = new HashMap<Player, SimpleInventorySaver>();
+	private static ArrayList<Player> Players;
+
+	// Fin HashMap
 
 	public static NMS getNMS() {
 		return nmsAccess;
@@ -61,7 +64,7 @@ public class Main extends JavaPlugin {
 			ScoreBoardManager.load();
 			getServer().getPluginManager().registerEvents(new EventGame(this),
 					this);
-			
+
 			ymap = getConfig().getInt("defaultspawn.y");
 			System.out.println(ymap);
 		} catch (Exception e) {
@@ -99,10 +102,8 @@ public class Main extends JavaPlugin {
 		world = this.getConfig().getString("defaultspawn.world");
 		setJoinauto(this.getConfig().getBoolean("OnloginForceJoin"));
 		setKickAutoEnabled(this.getConfig().getBoolean("KickOnGameIsFinish"));
-
+        setMaxpoint(this.getConfig().getInt("MaxPoint"));
 	}
-
-	private int compteur = 60;
 
 	public void JoinQuake(Player player) {
 		if (isStart()) {
@@ -155,7 +156,7 @@ public class Main extends JavaPlugin {
 					new Runnable() {
 
 						public void run() {
-
+                            
 							if (compteur != -1) {
 
 								if (compteur != 0) {
@@ -203,7 +204,6 @@ public class Main extends JavaPlugin {
 
 			Player player = (Player) sender; // Le player est le sender
 
-			
 			if (commandLabel.equals("quakecraft")) {
 				return Commands.onCommand(args, player);
 			}
@@ -289,7 +289,8 @@ public class Main extends JavaPlugin {
 
 	}
 
-	public void checkPoint(Player lastdeadh) {
+	public void checkPoint() {
+		
 		try {
 			if (!isFinish) {
 				for (Player player : Players) {
@@ -298,32 +299,27 @@ public class Main extends JavaPlugin {
 							player);
 					int points = score.getScore();
 
-					if (points >= 25) {
+					if (points >= maxpoint) {
 
-						finish(player);
-
+						isFinish = true;
+                        winnerName = player.getName();
+                        break;
 					}
 				}
-			} else {
-				if (!Players.isEmpty()) {
-					forcefinish(Bukkit.getPlayer(winnerName));
-				}
-			}
+			} 
 
 		} catch (Exception e) {
-
+           e.printStackTrace();
 		}
 
 	}
 
-	private void finish(Player winner) {
-		winnerName = winner.getDisplayName();
-		String message = "§7[§cQuake§7] " + winner.getDisplayName()
+	public void finish(Player player) {
+		
+		String message = "§7[§cQuake§7] " + winnerName
 				+ " win the game !";
-		Iterator<Player> i = Players.iterator();
-		while (i.hasNext()) {
-			Player player = i.next();
-
+		
+	
 			player.sendMessage(message);
 			// Players.remove(player);
 
@@ -342,14 +338,15 @@ public class Main extends JavaPlugin {
 
 			}
 
-			isFinish = true;
-			isStart = false;
+			
+			Players.remove(player);
 			if (isKickAutoEnabled()) {
 				player.kickPlayer(message);
 			}
 		}
-		i.remove();
-	}
+	
+		
+	
 
 	private void forcefinish(Player player) {
 
@@ -357,7 +354,7 @@ public class Main extends JavaPlugin {
 
 		if (Players.equals(player)) {
 			player.sendMessage(message);
-
+            System.out.println(message);
 			Players.remove(player);
 
 			player.setScoreboard(ScoreBoardManager.manager.getNewScoreboard());
@@ -414,22 +411,22 @@ public class Main extends JavaPlugin {
 					+ version);
 			this.setEnabled(false);
 		} catch (InstantiationException e) {
-			// TODO Auto-generated catch block
+
 			e.printStackTrace();
 		} catch (IllegalAccessException e) {
-			// TODO Auto-generated catch block
+
 			e.printStackTrace();
 		} catch (IllegalArgumentException e) {
-			// TODO Auto-generated catch block
+
 			e.printStackTrace();
 		} catch (InvocationTargetException e) {
-			// TODO Auto-generated catch block
+
 			e.printStackTrace();
 		} catch (NoSuchMethodException e) {
-			// TODO Auto-generated catch block
+
 			e.printStackTrace();
 		} catch (SecurityException e) {
-			// TODO Auto-generated catch block
+
 			e.printStackTrace();
 		}
 		if (this.isEnabled()) {
@@ -444,6 +441,23 @@ public class Main extends JavaPlugin {
 
 	public void setKickAutoEnabled(boolean kickonfinish) {
 		this.kickonfinish = kickonfinish;
+	}
+
+	public int getMaxpoint() {
+		return maxpoint;
+	}
+
+	public void setMaxpoint(int max) {
+		
+		if(max != 0)
+		{
+			this.maxpoint = max;
+		}
+		else
+		{
+			this.maxpoint = 25;
+		}
+		
 	}
 
 }

@@ -49,7 +49,8 @@ private Main instance;
 		}
 	}
 	@EventHandler
-	public void onMove(final PlayerMoveEvent event) {
+	public void onMove(PlayerMoveEvent event) {
+		
 		Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(instance,
 				new Runnable() {
 
@@ -57,15 +58,26 @@ private Main instance;
 
 						if (!Main.getPlayers().isEmpty()) {
 
-							if (!Main.isStart() && !instance.isSelecting) {
+							if (!Main.isStart() && !Main.isSelecting) {
 								Main.getPlayers().clear();
-
+								instance.checkPoint();
 							}
-							instance.checkPoint(event.getPlayer());
-
+						
+						
 						}
 					}
-				}, 20);
+				}, 1);
+		if(Main.isFinish) {
+			
+			   for(Player p : Main.getPlayers())
+			   {
+				   instance.finish(p);
+				   Main.isStart = false;
+			   }
+				
+				 
+			
+		}
 	}
 
 	@EventHandler
@@ -95,11 +107,21 @@ private Main instance;
 									PotionEffectType.JUMP, 12000, 1));
 							player.addPotionEffect(new PotionEffect(
 									PotionEffectType.SPEED, 12000, 3));
-							instance.checkPoint(player.getPlayer());
-
+							instance.checkPoint();
+						
 						}
 					}
-				}, 20);
+				}, 1);
+		if(Main.isFinish) {
+			
+			  
+				   instance.finish(event.getPlayer());
+				   Main.isStart = false;
+			   }
+				
+				 
+			
+		
 	}
 	@EventHandler
 	public void onPlayerLeave(PlayerQuitEvent e) {

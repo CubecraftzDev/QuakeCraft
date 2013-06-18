@@ -19,6 +19,7 @@ public class Commands {
 		register("setspawnrandom", new CommandRandomSpawn());
 		register("joinauto", new CommandSetJoinAuto());
 		register("kickauto", new CommandSetKickAuto());
+		register("maxpoint", new CommandSetMaxPoint());
 		instance = plug;
 	}
 
