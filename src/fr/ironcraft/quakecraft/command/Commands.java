@@ -18,6 +18,7 @@ public class Commands {
 		register("setdefaultspawn", new CommandConfigDefaultSpawn());
 		register("setspawnrandom", new CommandRandomSpawn());
 		register("joinauto", new CommandSetJoinAuto());
+		register("kickauto", new CommandSetKickAuto());
 		instance = plug;
 	}
 

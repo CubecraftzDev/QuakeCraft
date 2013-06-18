@@ -27,7 +27,7 @@ import fr.ironcraft.quakecraft.event.*;
 import fr.ironcraft.quakecraft.scoreboard.ScoreBoardManager;
 import fr.ironcraft.quakecraft.utils.*;
 
-public class Main extends JavaPlugin implements Listener {
+public class Main extends JavaPlugin {
 
 	public Logger log = Logger.getLogger("minecraft");
 	private static ArrayList<Player> Players;
@@ -40,12 +40,9 @@ public class Main extends JavaPlugin implements Listener {
 	private static NMS nmsAccess;
 	public final static HashMap<Player, SimpleInventorySaver> inventorySaver = new HashMap<Player, SimpleInventorySaver>();
 	private boolean joinauto;
+	private boolean kickonfinish;
 	public static int ymap;
 	public static Main main = new Main();
-
-	public Main() {
-
-	}
 
 	public static HashMap<Player, GameMode> Gamemode = new HashMap<Player, GameMode>();
 	public static HashMap<Player, Location> Location = new HashMap<Player, Location>();
@@ -62,9 +59,9 @@ public class Main extends JavaPlugin implements Listener {
 			Players = new ArrayList<Player>();
 			this.loadConfigFile();
 			ScoreBoardManager.load();
-			getServer().getPluginManager().registerEvents(
-					new EventQuakeWoodHoe(), this);
-			getServer().getPluginManager().registerEvents(this, this);
+			getServer().getPluginManager().registerEvents(new EventGame(this),
+					this);
+			
 			ymap = getConfig().getInt("defaultspawn.y");
 			System.out.println(ymap);
 		} catch (Exception e) {
@@ -101,9 +98,16 @@ public class Main extends JavaPlugin implements Listener {
 		checkforupdate = fileConfig.getBoolean("CheckforUpdate");
 		world = this.getConfig().getString("defaultspawn.world");
 		setJoinauto(this.getConfig().getBoolean("OnloginForceJoin"));
+		setKickAutoEnabled(this.getConfig().getBoolean("KickOnGameIsFinish"));
+
 	}
-private int compteur = 60;
+
+	private int compteur = 60;
+
 	public void JoinQuake(Player player) {
+		if (isStart()) {
+			player.kickPlayer("Quake is Already Start !");
+		}
 		if (!(this.getConfig().getInt("defaultspawn.y") == 0)) {
 			if (Players.size() < 8 && (!Players.contains(player)) && !isStart()) {
 				player.teleport(beforeSpawn());
@@ -145,7 +149,7 @@ private int compteur = 60;
 			}
 
 		}
-		if (Players.size() == 6 && !isLoading) {
+		if (Players.size() == 6 && !isLoading && !isStart()) {
 			isLoading = true;
 			getServer().getScheduler().scheduleSyncRepeatingTask(this,
 					new Runnable() {
@@ -172,7 +176,8 @@ private int compteur = 60;
 									compteur = -1;
 
 									for (Player online : Players) {
-										ScoreBoardManager.score = ScoreBoardManager.objective.getScore(online);
+										ScoreBoardManager.score = ScoreBoardManager.objective
+												.getScore(online);
 										ScoreBoardManager.score.setScore(0);
 										online.teleport(Spawn());
 
@@ -198,149 +203,9 @@ private int compteur = 60;
 
 			Player player = (Player) sender; // Le player est le sender
 
-			String cmd;
+			
 			if (commandLabel.equals("quakecraft")) {
-
 				return Commands.onCommand(args, player);
-				// cmd = args[0];
-				//
-				// if (cmd.equals("join")
-				// && sender.hasPermission("quakecraft.join")) {
-				//
-				// JoinQuake(player);
-				// return true;
-				//
-				// }
-				// if (cmd.equals("forcestart")
-				// && sender.hasPermission("quakecraft.forcestart")) {
-				// if (Players.size() < 6) {
-				// isStart = true;
-				// isSelecting = false;
-				// for (Player online : Players) {
-				// ScoreBoardManager.score =
-				// ScoreBoardManager.objective.getScore(online);
-				// ScoreBoardManager.score.setScore(0);
-				//
-				// }
-				//
-				// for (Player online : Players) {
-				// online.setScoreboard(ScoreBoardManager.board);
-				// }
-				// }
-				// return true;
-				//
-				// }
-				// if (cmd.equals("quit")
-				// && sender.hasPermission("quakecraft.quit")) {
-				// if (!isStart()) {
-				// if (Players.contains(player)) {
-				// Players.remove(player);
-				// player.setScoreboard(ScoreBoardManager.manager.getNewScoreboard());
-				// SimpleInventorySaver sis = inventorySaver
-				// .get(player);
-				// if (sis == null) {
-				//
-				// }
-				// player.setGameMode(Gamemode.get(player));
-				// player.teleport(Location.get(player));
-				// Gamemode.remove(player);
-				// Location.remove(player);
-				// sis.restore(player);
-				// for (PotionEffect effect : player
-				// .getActivePotionEffects()) {
-				// player.removePotionEffect(effect.getType());
-				//
-				// }
-				// return true;
-				// }
-				// } else {
-				// sender.sendMessage("§7[§cQuake§7] You can not leave the game now !");
-				// return true;
-				// }
-				//
-				// }
-				// if (cmd.equals("setdefaultspawn")
-				// && sender.hasPermission("quakecraft.admin")) {
-				// this.getConfig().set("defaultspawn.x",
-				// player.getLocation().getX());
-				// this.getConfig().set("defaultspawn.y",
-				// player.getLocation().getY());
-				// this.getConfig().set("defaultspawn.z",
-				// player.getLocation().getZ());
-				// this.getConfig().set("defaultspawn.world",
-				// player.getLocation().getWorld().getName());
-				//
-				// this.saveConfig();
-				// sender.sendMessage("§7[§cQuake§7] Configuration du spawn d'arriver Ok. Merci de définir d'autre spawn avec /quakecraft setspawnrandom");
-				// return true;
-				// }
-				// if (cmd.equals("joinauto")
-				// && sender.hasPermission("quakecraft.admin")) {
-				//
-				//
-				//
-				//
-				// boolean flag =
-				// this.getConfig().getBoolean("OnloginForceJoin");
-				// if(flag)
-				// {
-				// this.getConfig().set("OnloginForceJoin",
-				// false);
-				// sender.sendMessage("§7[§cQuake§7] Vous avez désactivé le joinauto");
-				// }
-				// else
-				// {
-				// this.getConfig().set("OnloginForceJoin",
-				// true);
-				// sender.sendMessage("§7[§cQuake§7] Vous avez activé le joinauto");
-				// }
-				//
-				//
-				// this.saveConfig();
-				// setJoinauto(this.getConfig().getBoolean("OnloginForceJoin"));
-				//
-				//
-				//
-				//
-				//
-				// return true;
-				//
-				//
-				//
-				//
-				// }
-				//
-				//
-				// }
-				// if (args.length == 2) {
-				// cmd = args[0];
-				// if (cmd.equals("setspawnrandom")
-				// && sender.hasPermission("quakecraft.admin")) {
-				// String arg2 = args[1];
-				// if (arg2 != null) {
-				// int arg = Integer.parseInt(arg2);
-				// this.getConfig().set("spawn." + arg + ".x",
-				// player.getLocation().getX());
-				// this.getConfig().set("spawn." + arg + ".y",
-				// player.getLocation().getY());
-				// this.getConfig().set("spawn." + arg + ".z",
-				// player.getLocation().getZ());
-				// this.getConfig().set("spawn." + arg + ".world",
-				// player.getLocation().getWorld().getName());
-				//
-				// this.saveConfig();
-				// sender.sendMessage("§7[§cQuake§7] Configuration du spawn d'arriver n°"
-				// + arg + " Ok");
-				// return true;
-				// } else {
-				// return false;
-				// }
-				//
-				// }
-				//
-				// }
-				// }
-				//
 			}
 		}
 
@@ -424,68 +289,6 @@ private int compteur = 60;
 
 	}
 
-	@EventHandler
-	public void onMove(final PlayerMoveEvent event) {
-		getServer().getScheduler().scheduleSyncDelayedTask(this,
-				new Runnable() {
-
-					public void run() {
-
-						if (!Players.isEmpty()) {
-
-							if (!isStart && !isSelecting) {
-								Players.clear();
-
-							}
-							checkPoint(event.getPlayer());
-
-						}
-					}
-				}, 20);
-	}
-
-	@EventHandler
-	public void onSpawn(PlayerRespawnEvent event) {
-
-		final Player player = event.getPlayer();
-
-		getServer().getScheduler().scheduleSyncDelayedTask(this,
-				new Runnable() {
-
-					public void run() {
-
-						if (isInQuake(player)) {
-
-							player.teleport(Spawn());
-							ItemStack woodhoe = new ItemStack(
-									Material.WOOD_HOE, 1);
-
-							player.getInventory().addItem(woodhoe);
-							player.getInventory().setHeldItemSlot(0);
-							ItemStack is = player.getInventory().getItem(0);
-
-							ItemMeta im = is.getItemMeta();
-							im.setDisplayName("RailGun");
-							is.setItemMeta(im);
-							player.addPotionEffect(new PotionEffect(
-									PotionEffectType.JUMP, 12000, 1));
-							player.addPotionEffect(new PotionEffect(
-									PotionEffectType.SPEED, 12000, 3));
-							checkPoint(player.getPlayer());
-
-						}
-					}
-				}, 20);
-	}
-
-	@EventHandler
-	public void onConnectServer(PlayerJoinEvent e) {
-		if (this.isAutoJoinActivated()) {
-			e.setJoinMessage("");
-			this.JoinQuake(e.getPlayer());
-		}
-	}
-
 	public void checkPoint(Player lastdeadh) {
 		try {
 			if (!isFinish) {
@@ -513,7 +316,7 @@ private int compteur = 60;
 
 	}
 
-	public void finish(Player winner) {
+	private void finish(Player winner) {
 		winnerName = winner.getDisplayName();
 		String message = "§7[§cQuake§7] " + winner.getDisplayName()
 				+ " win the game !";
@@ -541,11 +344,14 @@ private int compteur = 60;
 
 			isFinish = true;
 			isStart = false;
+			if (isKickAutoEnabled()) {
+				player.kickPlayer(message);
+			}
 		}
 		i.remove();
 	}
 
-	public void forcefinish(Player player) {
+	private void forcefinish(Player player) {
 
 		String message = "§7[§cQuake§7] " + winnerName + " win the game !";
 
@@ -568,29 +374,15 @@ private int compteur = 60;
 				player.removePotionEffect(effect.getType());
 
 			}
+			if (isKickAutoEnabled()) {
+				player.kickPlayer(message);
+			}
 
 		}
 		if (Players.isEmpty()) {
 			isStart = false;
 			isFinish = false;
 		}
-		// lastdeadh.sendMessage(message);
-		// Players.remove(lastdeadh);
-		// lastdeadh.setScoreboard(manager.getNewScoreboard());
-		// SimpleInventorySaver sis = inventorySaver
-		// .get(lastdeadh);
-		// if (sis == null) {
-		//
-		// }
-		// lastdeadh.setGameMode(Gamemode.get(lastdeadh));
-		// Gamemode.remove(lastdeadh);
-		// sis.restore(lastdeadh);
-		// for (PotionEffect effect : lastdeadh
-		// .getActivePotionEffects()) {
-		// lastdeadh.removePotionEffect(effect.getType());
-		//
-		// }
-		//
 	}
 
 	public boolean isAutoJoinActivated() {
@@ -602,11 +394,11 @@ private int compteur = 60;
 	}
 
 	public void enableCraftbukkitAccess() {
-		// DO Stuff
+
 		String packageName = getServer().getClass().getPackage().getName();
 		String[] packageSplit = packageName.split("\\.");
 		String version = packageSplit[packageSplit.length - 1];
-		// Fun Stuff
+
 		try {
 			Class<?> nmsClass = Class.forName("fr.ironcraft.quakecraft.ver."
 					+ version);
@@ -644,6 +436,14 @@ private int compteur = 60;
 			// log.info(nmsAccess.getIsWhitelist());
 			nmsAccess.load();
 		}
+	}
+
+	public boolean isKickAutoEnabled() {
+		return kickonfinish;
+	}
+
+	public void setKickAutoEnabled(boolean kickonfinish) {
+		this.kickonfinish = kickonfinish;
 	}
 
 }

@@ -20,19 +20,87 @@ import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scoreboard.Score;
 
 import fr.ironcraft.quakecraft.Main;
 import fr.ironcraft.quakecraft.scoreboard.ScoreBoardManager;
 
 
-public class EventQuakeWoodHoe implements Listener {
+public class EventGame implements Listener {
 
+private Main instance;
+	
+	public EventGame(Main main) {
+		instance = main;
+	}
+	@EventHandler
+	public void onConnectServer(PlayerJoinEvent e) {
+		if (instance.isAutoJoinActivated()) {
+			e.setJoinMessage("");
+			instance.JoinQuake(e.getPlayer());
+		}
+	}
+	@EventHandler
+	public void onMove(final PlayerMoveEvent event) {
+		Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(instance,
+				new Runnable() {
 
-	
-	
+					public void run() {
+
+						if (!Main.getPlayers().isEmpty()) {
+
+							if (!Main.isStart() && !instance.isSelecting) {
+								Main.getPlayers().clear();
+
+							}
+							instance.checkPoint(event.getPlayer());
+
+						}
+					}
+				}, 20);
+	}
+
+	@EventHandler
+	public void onSpawn(PlayerRespawnEvent event) {
+
+		final Player player = event.getPlayer();
+
+		Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(instance,
+				new Runnable() {
+
+					public void run() {
+
+						if (Main.isInQuake(player)) {
+
+							player.teleport(instance.Spawn());
+							ItemStack woodhoe = new ItemStack(
+									Material.WOOD_HOE, 1);
+
+							player.getInventory().addItem(woodhoe);
+							player.getInventory().setHeldItemSlot(0);
+							ItemStack is = player.getInventory().getItem(0);
+
+							ItemMeta im = is.getItemMeta();
+							im.setDisplayName("RailGun");
+							is.setItemMeta(im);
+							player.addPotionEffect(new PotionEffect(
+									PotionEffectType.JUMP, 12000, 1));
+							player.addPotionEffect(new PotionEffect(
+									PotionEffectType.SPEED, 12000, 3));
+							instance.checkPoint(player.getPlayer());
+
+						}
+					}
+				}, 20);
+	}
 	@EventHandler
 	public void onPlayerLeave(PlayerQuitEvent e) {
 		Player p = e.getPlayer();
