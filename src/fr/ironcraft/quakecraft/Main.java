@@ -66,7 +66,7 @@ public class Main extends JavaPlugin {
 					this);
 
 			ymap = getConfig().getInt("defaultspawn.y");
-			System.out.println(ymap);
+			
 		} catch (Exception e) {
 			log.info("Hey, j'ai pas reusis a me start ! A tu la version 1.5.1 minimum ????");
 			this.setEnabled(false);
@@ -102,7 +102,7 @@ public class Main extends JavaPlugin {
 		world = this.getConfig().getString("defaultspawn.world");
 		setJoinauto(this.getConfig().getBoolean("OnloginForceJoin"));
 		setKickAutoEnabled(this.getConfig().getBoolean("KickOnGameIsFinish"));
-        setMaxpoint(this.getConfig().getInt("MaxPoint"));
+		setMaxpoint(this.getConfig().getInt("MaxPoint"));
 	}
 
 	public void JoinQuake(Player player) {
@@ -156,7 +156,7 @@ public class Main extends JavaPlugin {
 					new Runnable() {
 
 						public void run() {
-                            
+
 							if (compteur != -1) {
 
 								if (compteur != 0) {
@@ -290,95 +290,71 @@ public class Main extends JavaPlugin {
 	}
 
 	public void checkPoint() {
-		
-		try {
-			if (!isFinish) {
-				for (Player player : Players) {
 
-					Score score = ScoreBoardManager.getObjective().getScore(
-							player);
-					int points = score.getScore();
+		if (!isFinish) {
+			for (Player player : Players) {
 
-					if (points >= maxpoint) {
+				Score score = ScoreBoardManager.getObjective().getScore(player);
+				int points = score.getScore();
 
-						isFinish = true;
-                        winnerName = player.getName();
-                        break;
-					}
+				if (points >= maxpoint) {
+
+					winnerName = player.getName();
+					isFinish = true;
+					finish();
+                    break;
 				}
-			} 
-
-		} catch (Exception e) {
-           e.printStackTrace();
+			}
 		}
 
 	}
 
-	public void finish(Player player) {
-		
-		String message = "§7[§cQuake§7] " + winnerName
-				+ " win the game !";
-		
+	public void finish() {
+
 	
-			player.sendMessage(message);
-			// Players.remove(player);
+		Iterator<Player> itr = Players.iterator();
+		while (itr.hasNext()) {
+			Player player = itr.next();
+			// ferrybig end
 
-			player.setScoreboard(ScoreBoardManager.manager.getNewScoreboard());
-			SimpleInventorySaver sis = inventorySaver.get(player);
-			if (sis == null) {
+			// ferrybig start
 
-			}
-			player.setGameMode(Gamemode.get(player));
-			player.teleport(Location.get(player));
-			Gamemode.remove(player);
-			Location.remove(player);
-			sis.restore(player);
-			for (PotionEffect effect : player.getActivePotionEffects()) {
-				player.removePotionEffect(effect.getType());
-
-			}
-
+		
+			isFinish = true;
 			
-			Players.remove(player);
-			if (isKickAutoEnabled()) {
-				player.kickPlayer(message);
-			}
-		}
-	
+			itr.remove();
+			isStart = false;
+
 		
-	
-
-	private void forcefinish(Player player) {
-
 		String message = "§7[§cQuake§7] " + winnerName + " win the game !";
 
-		if (Players.equals(player)) {
-			player.sendMessage(message);
-            System.out.println(message);
-			Players.remove(player);
+		player.sendMessage(message);
+		// Players.remove(player);
 
-			player.setScoreboard(ScoreBoardManager.manager.getNewScoreboard());
-			SimpleInventorySaver sis = inventorySaver.get(player);
-			if (sis == null) {
-
-			}
-			player.setGameMode(Gamemode.get(player));
-			player.teleport(Location.get(player));
-			Gamemode.remove(player);
-			Location.remove(player);
-			sis.restore(player);
-			for (PotionEffect effect : player.getActivePotionEffects()) {
-				player.removePotionEffect(effect.getType());
-
-			}
-			if (isKickAutoEnabled()) {
-				player.kickPlayer(message);
-			}
+		player.setScoreboard(ScoreBoardManager.manager.getNewScoreboard());
+		SimpleInventorySaver sis = inventorySaver.get(player);
+		if (sis == null) {
 
 		}
-		if (Players.isEmpty()) {
-			isStart = false;
-			isFinish = false;
+		player.setGameMode(Gamemode.get(player));
+		player.teleport(Location.get(player));
+		Gamemode.remove(player);
+		Location.remove(player);
+		sis.restore(player);
+		// for (PotionEffect effect : player.getActivePotionEffects()) {
+		// player.removePotionEffect(effect.getType());
+		//
+		// }
+
+		if (Main.isFinish && Main.getPlayers().isEmpty()) {
+			Main.isFinish = false;
+		}
+		Players.remove(player);
+		if (isKickAutoEnabled()) {
+
+			player.kickPlayer(message);
+
+		}
 		}
 	}
 
@@ -448,16 +424,13 @@ public class Main extends JavaPlugin {
 	}
 
 	public void setMaxpoint(int max) {
-		
-		if(max != 0)
-		{
+
+		if (max != 0) {
 			this.maxpoint = max;
-		}
-		else
-		{
+		} else {
 			this.maxpoint = 25;
 		}
-		
+
 	}
 
 }

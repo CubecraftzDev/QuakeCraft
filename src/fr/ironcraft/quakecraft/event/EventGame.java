@@ -46,39 +46,40 @@ private Main instance;
 		if (instance.isAutoJoinActivated()) {
 			e.setJoinMessage("");
 			instance.JoinQuake(e.getPlayer());
+
 		}
 	}
-	@EventHandler
-	public void onMove(PlayerMoveEvent event) {
-		
-		Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(instance,
-				new Runnable() {
-
-					public void run() {
-
-						if (!Main.getPlayers().isEmpty()) {
-
-							if (!Main.isStart() && !Main.isSelecting) {
-								Main.getPlayers().clear();
-								instance.checkPoint();
-							}
-						
-						
-						}
-					}
-				}, 1);
-		if(Main.isFinish) {
-			
-			   for(Player p : Main.getPlayers())
-			   {
-				   instance.finish(p);
-				   Main.isStart = false;
-			   }
-				
-				 
-			
-		}
-	}
+//	@EventHandler
+//	public void onMove(PlayerMoveEvent event) {
+//		
+//		Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(instance,
+//				new Runnable() {
+//
+//					public void run() {
+//
+//						if (!Main.getPlayers().isEmpty()) {
+//
+//							if (!Main.isStart() && !Main.isSelecting) {
+//								Main.getPlayers().clear();
+//								instance.checkPoint();
+//							}
+//						
+//						
+//						}
+//					}
+//				}, 1);
+//		if(Main.isFinish) {
+//			
+//			   for(Player p : Main.getPlayers())
+//			   {
+//				   instance.finish(p);
+//				   Main.isStart = false;
+//			   }
+//				
+//				 
+//			
+//		}
+//	}
 
 	@EventHandler
 	public void onSpawn(PlayerRespawnEvent event) {
@@ -112,12 +113,6 @@ private Main instance;
 						}
 					}
 				}, 1);
-		if(Main.isFinish) {
-			
-			  
-				   instance.finish(event.getPlayer());
-				   Main.isStart = false;
-			   }
 				
 				 
 			
@@ -132,6 +127,7 @@ private Main instance;
 		for (PotionEffect effect : p.getActivePotionEffects()) {
 			p.removePotionEffect(effect.getType());
 		}
+		
 
 	}
 
@@ -185,13 +181,17 @@ private Main instance;
 					Score score = ScoreBoardManager.getObjective().getScore(shooter);
 					int scorepoint = score.getScore();
 					score.setScore(scorepoint + 1);
+					instance.checkPoint();
 					addFrag(shooter, target, "Rocket Launcher");
-				}
+					
+					
+				
 				e.getDamager().remove();
 			}
 
 			
 
+			}
 		}
 
 	}
@@ -226,8 +226,10 @@ private Main instance;
 
 							Score score = ScoreBoardManager.getObjective().getScore(shooter);
 							int scorepoint = score.getScore();
-							score.setScore(scorepoint + 1);
+							score.setScore(scorepoint+ 1);
+							instance.checkPoint();
 							addFrag(shooter, target, "Rocket Launcher");
+							
 						}
 					}
 					e.getEntity().remove();
