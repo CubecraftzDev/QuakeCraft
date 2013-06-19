@@ -341,10 +341,10 @@ public class Main extends JavaPlugin {
 		Gamemode.remove(player);
 		Location.remove(player);
 		sis.restore(player);
-		// for (PotionEffect effect : player.getActivePotionEffects()) {
-		// player.removePotionEffect(effect.getType());
-		//
-		// }
+		 for (PotionEffect effect : player.getActivePotionEffects()) {
+		 player.removePotionEffect(effect.getType());
+		
+		 }
 
 		if (Main.isFinish && Main.getPlayers().isEmpty()) {
 			Main.isFinish = false;
