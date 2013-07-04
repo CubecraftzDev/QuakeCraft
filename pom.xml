@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>QuakeCraft</groupId>
   <artifactId>QuakeCraft</artifactId>
-  <version>0.1.3</version>
+  <version>0.1.4</version>
   <build>
     <sourceDirectory>src</sourceDirectory>
     <plugins>

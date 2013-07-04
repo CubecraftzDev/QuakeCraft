@@ -40,7 +40,7 @@ public class Main extends JavaPlugin {
 	public static int ymap;
 	private int maxpoint;
 	// Fin int
-	private static NMS nmsAccess;
+	public static NMS nmsAccess;
 
 	// Début HashMap
 	public static HashMap<Player, GameMode> Gamemode = new HashMap<Player, GameMode>();
@@ -58,7 +58,6 @@ public class Main extends JavaPlugin {
 		try {
 
 			Commands.load(this);
-			enableCraftbukkitAccess();
 			Players = new ArrayList<Player>();
 			this.loadConfigFile();
 			ScoreBoardManager.load();

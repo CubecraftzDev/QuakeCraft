@@ -33,14 +33,14 @@ import org.bukkit.scoreboard.Score;
 import fr.ironcraft.quakecraft.Main;
 import fr.ironcraft.quakecraft.scoreboard.ScoreBoardManager;
 
-
 public class EventGame implements Listener {
 
-private Main instance;
-	
+	private Main instance;
+
 	public EventGame(Main main) {
 		instance = main;
 	}
+
 	@EventHandler
 	public void onConnectServer(PlayerJoinEvent e) {
 		if (instance.isAutoJoinActivated()) {
@@ -49,45 +49,46 @@ private Main instance;
 
 		}
 	}
-//	@EventHandler
-//	public void onMove(PlayerMoveEvent event) {
-//		
-//		Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(instance,
-//				new Runnable() {
-//
-//					public void run() {
-//
-//						if (!Main.getPlayers().isEmpty()) {
-//
-//							if (!Main.isStart() && !Main.isSelecting) {
-//								Main.getPlayers().clear();
-//								instance.checkPoint();
-//							}
-//						
-//						
-//						}
-//					}
-//				}, 1);
-//		if(Main.isFinish) {
-//			
-//			   for(Player p : Main.getPlayers())
-//			   {
-//				   instance.finish(p);
-//				   Main.isStart = false;
-//			   }
-//				
-//				 
-//			
-//		}
-//	}
+
+	// @EventHandler
+	// public void onMove(PlayerMoveEvent event) {
+	//
+	// Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(instance,
+	// new Runnable() {
+	//
+	// public void run() {
+	//
+	// if (!Main.getPlayers().isEmpty()) {
+	//
+	// if (!Main.isStart() && !Main.isSelecting) {
+	// Main.getPlayers().clear();
+	// instance.checkPoint();
+	// }
+	//
+	//
+	// }
+	// }
+	// }, 1);
+	// if(Main.isFinish) {
+	//
+	// for(Player p : Main.getPlayers())
+	// {
+	// instance.finish(p);
+	// Main.isStart = false;
+	// }
+	//
+	//
+	//
+	// }
+	// }
 
 	@EventHandler
 	public void onSpawn(PlayerRespawnEvent event) {
 
 		final Player player = event.getPlayer();
 
-		Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(instance,
-				new Runnable() {
+		Bukkit.getServer().getScheduler()
+				.scheduleSyncDelayedTask(instance, new Runnable() {
 
 					public void run() {
 
@@ -109,15 +110,13 @@ private Main instance;
 							player.addPotionEffect(new PotionEffect(
 									PotionEffectType.SPEED, 12000, 3));
 							instance.checkPoint();
-						
+
 						}
 					}
 				}, 1);
-				
-				 
-			
-		
+
 	}
+
 	@EventHandler
 	public void onPlayerLeave(PlayerQuitEvent e) {
 		Player p = e.getPlayer();
@@ -127,7 +126,6 @@ private Main instance;
 		for (PotionEffect effect : p.getActivePotionEffects()) {
 			p.removePotionEffect(effect.getType());
 		}
-		
 
 	}
 
@@ -154,16 +152,11 @@ private Main instance;
 
 	@EventHandler
 	public void onDeath(PlayerDeathEvent e) {
-	    if (Main.isInQuake(e.getEntity())) {
+		if (Main.isInQuake(e.getEntity())) {
 			e.getDrops().clear();
 			e.setDeathMessage("");
-			
-			
-		}
-		
-		
-		
 
+		}
 
 	}
 
@@ -171,25 +164,24 @@ private Main instance;
 	public void onHit(EntityDamageByEntityEvent e) {
 		// IF THE PLAYER IS HIT BY AN ARROW (FROM THE ROCKET LAUNCHER)
 		if (e.getDamager() instanceof Arrow && e.getEntity() instanceof Player) {
-			Player shooter = (Player) ((Arrow) e.getDamager()).getShooter();
-			Player target = (Player) e.getEntity();
+			if (((Arrow) e.getDamager()).getShooter() instanceof Player) {
+				Player shooter = (Player) ((Arrow) e.getDamager()).getShooter();
+				Player target = (Player) e.getEntity();
 
-			
-			if (Main.isInQuake(target)) {
-				if (shooter != target && shooter != null && target != null) {
+				if (Main.isInQuake(target)) {
+					if (shooter != target && shooter != null && target != null) {
 
-					Score score = ScoreBoardManager.getObjective().getScore(shooter);
-					int scorepoint = score.getScore();
-					score.setScore(scorepoint + 1);
-					instance.checkPoint();
-					addFrag(shooter, target, "Rocket Launcher");
-					
-					
-				
-				e.getDamager().remove();
-			}
+						Score score = ScoreBoardManager.getObjective()
+								.getScore(shooter);
+						int scorepoint = score.getScore();
+						score.setScore(scorepoint + 1);
+						instance.checkPoint();
+						addFrag(shooter, target, "Rocket Launcher");
 
-			
+						e.getDamager().remove();
+					}
+
+				}
 
 			}
 		}
@@ -202,48 +194,51 @@ private Main instance;
 		if (e.getEntity() instanceof Arrow) {
 
 			List<Entity> eList = e.getEntity().getNearbyEntities(2, 2, 2);
-            
+
 			for (Entity pl : eList) {
 
 				if (pl instanceof Player) {
+					if (e.getEntity().getShooter() instanceof Player) {
+						Player shooter = (Player) ((Arrow) e.getEntity())
+								.getShooter();
+						Player target = (Player) pl;
+						if (Main.isInQuake(target)) {
+							e.getEntity()
+									.getLocation()
+									.getWorld()
+									.createExplosion(
+											e.getEntity().getLocation(), 0,
+											false);
+							e.getEntity()
+									.getLocation()
+									.getWorld()
+									.playEffect(e.getEntity().getLocation(),
+											Effect.SMOKE, 5);
+							if (target.getEntityId() != shooter.getEntityId()
+									&& shooter != null && target != null) {
 
-					Player shooter = (Player) ((Arrow) e.getEntity())
-							.getShooter();
-					Player target = (Player) pl;
-					if (Main.isInQuake(target)) {
-						e.getEntity()
-								.getLocation()
-								.getWorld()
-								.createExplosion(e.getEntity().getLocation(),
-										0, false);
-						e.getEntity()
-								.getLocation()
-								.getWorld()
-								.playEffect(e.getEntity().getLocation(),
-										Effect.SMOKE, 5);
-						if (target.getEntityId() != shooter.getEntityId()
-								&& shooter != null && target != null) {
+								Score score = ScoreBoardManager.getObjective()
+										.getScore(shooter);
+								int scorepoint = score.getScore();
+								score.setScore(scorepoint + 1);
+								instance.checkPoint();
+								addFrag(shooter, target, "Rocket Launcher");
 
-							Score score = ScoreBoardManager.getObjective().getScore(shooter);
-							int scorepoint = score.getScore();
-							score.setScore(scorepoint+ 1);
-							instance.checkPoint();
-							addFrag(shooter, target, "Rocket Launcher");
-							
+							}
 						}
+						e.getEntity().remove();
 					}
-					e.getEntity().remove();
+
 				}
 			}
 
-			
 		}
 	}
 
 	public void addFrag(Player p, Player target, String weapon) {
 
 		target.setHealth(0);
-	
+
 		Bukkit.getServer()
 				.broadcastMessage(
 						"§7[§cQuake§7]: " + p.getName() + " gibbed "
@@ -276,11 +271,12 @@ private Main instance;
 					if (System.currentTimeMillis()
 							- (pReloadRocket.get(e.getPlayer().getName())) >= 2000) {
 						Player p = e.getPlayer();
-						Arrow arrow = p.getWorld().spawn(p.getEyeLocation(),
-								Arrow.class);
-						arrow.setVelocity(p.getLocation().getDirection()
-								.multiply(4));
-						arrow.setShooter(p);
+//						Main.nmsAccess.spawnFirework(p);
+						 Arrow arrow = p.getWorld().spawn(p.getEyeLocation(),
+						 Arrow.class);
+						 arrow.setVelocity(p.getLocation().getDirection()
+						 .multiply(4));
+						 arrow.setShooter(p);
 						pReloadRocket.remove(p.getName());
 						pReloadRocket.put(p.getName(),
 								System.currentTimeMillis());
@@ -289,11 +285,12 @@ private Main instance;
 
 				else {
 					Player p = e.getPlayer();
-					Arrow arrow = p.getWorld().spawn(p.getEyeLocation(),
-							Arrow.class);
-					arrow.setVelocity(p.getLocation().getDirection()
-							.multiply(4));
-					arrow.setShooter(p);
+					 Arrow arrow = p.getWorld().spawn(p.getEyeLocation(),
+							 Arrow.class);
+							 arrow.setVelocity(p.getLocation().getDirection()
+							 .multiply(4));
+							 arrow.setShooter(p);
+//					Main.nmsAccess.spawnFirework(p);
 					pReloadRocket.put(p.getName(), System.currentTimeMillis());
 				}
 
