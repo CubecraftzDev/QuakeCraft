@@ -1,25 +1,25 @@
-name: QuakeCraft
-main: fr.ironcraft.quakecraft.Main
+name: Chivarly Gamemode
+main: fr.Cubecraftzdev.Chivarly.Main
 version: 0.1.4
 commands:
-    quakecraft:
-        description: QuakeCraft.
-        usage: /quakecraft 
-    quakecraft join:
-        description: Join The QuakeGame.
-        usage: /quakecraft join 
-    quakecraft quit:
+    Chivarly:
+        description: Chivarly Gamemode
+        usage: /cm
+    Chivarly join:
+        description: Join The Gamemode.
+        usage: /cm join
+    Chivarly quit:
         description: Quit The QuakeGame.
-        usage: /quakecraft quit 
-    quakecraft forcestart:
-        description: Force to start The QuakeGame.
-        usage: /quakecraft forcestart 
-    quakecraft setdefaultspawn:
-        description: SetDefaultSpawn for The QuakeGame.
+        usage: /cm quit 
+    Chivarly forcestart:
+        description: Forcestart the Game.
+        usage: /cm forcestart 
+    Chivarly setdefaultspawn:
+        description: SetDefaultSpawn for The Game.
         usage: /quakecraft setdefaultspawn 
-    quakecraft setdefaultspawn:
-        description: setspawnrandom for The QuakeGame.
-        usage: /quakecraft setspawnrandom [x]
-    quakecraft joinauto:
-        description: joinauto for The QuakeGame.
+    Chivarly setdefaultspawn:
+        description: setspawnrandom for The Game.
+        usage: /cm setspawnrandom [x]
+    Chivarly joinauto:
+        description: joinauto for The Game.
         usage: /quakecraft joinauto
